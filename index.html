@@ -197,6 +197,7 @@
     .next-grid p { margin: 0; color: #d5e7e5; }
 
     footer { padding: 28px 24px; color: #b8d1ce; background: var(--deep); border-top: 1px solid rgba(214, 240, 237, 0.2); text-align: center; font-size: 14px; }
+    .visit-count { display: block; margin-top: 8px; color: #d5e7e5; font-size: 13px; }
 
     @media (max-width: 1000px) {
       .workflow-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
@@ -224,6 +225,7 @@
       .measure-list div { grid-template-columns: 1fr; gap: 4px; }
     }
   </style>
+  <script defer src="https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js"></script>
 </head>
 <body>
   <header class="site-nav">
@@ -316,6 +318,9 @@
     </section>
   </main>
 
-  <footer>瀚海锐翼 - 面向燃油消耗降低的 Co-Flow Jet 船舶风力辅助翼设计</footer>
+  <footer>
+    <div>瀚海锐翼 - 面向燃油消耗降低的 Co-Flow Jet 船舶风力辅助翼设计</div>
+    <span class="visit-count">本站累计访问量 <span id="busuanzi_site_pv">加载中...</span> 次 | 本页浏览量 <span id="busuanzi_page_pv">加载中...</span> 次</span>
+  </footer>
 </body>
 </html>

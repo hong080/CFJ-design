@@ -248,6 +248,7 @@
     .reference-download:hover { background: var(--teal-dark); color: var(--white); }
     footer { padding: 28px 24px; background: var(--deep); color: #b8d1ce; text-align: center; font-size: 14px; }
     .source-note { max-width: 1060px; margin: 0 auto; }
+    .visit-count { margin: 8px 0 0; color: #d5e7e5; font-size: 13px; }
     @media (max-width: 900px) {
       h1 { font-size: 42px; }
       .problem-grid, .lab-layout { grid-template-columns: 1fr; gap: 32px; }
@@ -280,6 +281,7 @@
       .note-band { flex-direction: column; gap: 4px; }
     }
   </style>
+  <script defer src="https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js"></script>
 </head>
 <body>
   <nav class="site-nav" aria-label="页面导航">
@@ -517,6 +519,7 @@
 
   <footer>
     <p class="source-note">教学页依据《wap_1D_design_ship_part1》中的基准船参数、ITTC 1957 摩擦系数、简化阻力模型与 SFOC 曲线组织。交互结果用于理解数量级与逻辑关系。</p>
+    <p class="visit-count">本站累计访问量 <span id="busuanzi_site_pv">加载中...</span> 次 | 本页浏览量 <span id="busuanzi_page_pv">加载中...</span> 次</p>
   </footer>
 
   <script>
