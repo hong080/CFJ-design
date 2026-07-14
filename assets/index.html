@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="瀚海锐翼船舶风力辅助翼设计项目，从一维净节能评估到CFJ辅助翼试验验证。">
+  <title>瀚海锐翼 - 船舶风力辅助翼设计</title>
+  <style>
+    :root {
+      --ink: #132f38;
+      --ink-soft: #45616a;
+      --paper: #f5f8f7;
+      --white: #ffffff;
+      --line: #d8e2e1;
+      --teal: #147b7e;
+      --teal-dark: #0b555d;
+      --coral: #e8653d;
+      --sun: #e8b84a;
+      --leaf: #6c9270;
+      --deep: #09232b;
+      --shadow: 0 12px 28px rgba(10, 42, 49, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    a { color: inherit; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 22px; font-size: 52px; line-height: 1.12; letter-spacing: 0; }
+    h2 { margin-bottom: 16px; font-size: 32px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin-bottom: 8px; font-size: 19px; line-height: 1.35; letter-spacing: 0; }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 64px;
+      padding: 12px max(24px, calc((100% - 1160px) / 2));
+      background: rgba(245, 248, 247, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .site-mark { font-size: 15px; font-weight: 750; white-space: nowrap; }
+    .site-mark span { color: var(--teal); }
+    .nav-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px 24px; font-size: 14px; }
+    .nav-links a { color: var(--ink-soft); text-decoration: none; }
+    .nav-links a:hover { color: var(--teal-dark); }
+
+    .hero {
+      position: relative;
+      display: grid;
+      align-items: end;
+      min-height: 600px;
+      height: min(780px, calc(100vh - 64px));
+      padding: 58px max(24px, calc((100% - 1160px) / 2));
+      overflow: hidden;
+      isolation: isolate;
+      color: var(--white);
+      background: #164e5a;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: rgba(4, 27, 35, 0.58);
+    }
+
+    .hero-gallery {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .hero-panel {
+      min-width: 0;
+      background-repeat: no-repeat;
+      background-size: cover;
+      border-right: 1px solid rgba(255, 255, 255, 0.32);
+    }
+    .hero-panel:last-child { border-right: 0; }
+    .hero-panel--challenger { background-image: url("assets/hero-wind-challenger.png"); background-position: 36% center; }
+    .hero-panel--ventofoil { background-image: url("assets/hero-ventofoil.png"); background-position: 46% center; }
+    .hero-panel--coflow { background-image: url("assets/hero-coflow-jet.png"); background-position: 63% center; }
+    .hero-panel--windwings { background-image: url("assets/hero-windwings.png"); background-position: 58% center; }
+    .hero-panel--rotor { background-image: url("assets/hero-rotor-sails.png"); background-position: 55% center; }
+
+    .hero-content { position: relative; z-index: 2; max-width: 760px; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.38); }
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 16px;
+      color: #d6f0ed;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .hero-title-line { display: block; color: #ffffff; }
+    .hero-title-sub { display: block; color: #d6f0ed; }
+    .hero-copy { max-width: 680px; margin-bottom: 28px; font-size: 20px; line-height: 1.6; }
+    .hero-standard {
+      max-width: 650px;
+      margin: 0;
+      padding: 14px 18px;
+      border-left: 4px solid var(--sun);
+      background: rgba(9, 35, 43, 0.76);
+      font-size: 16px;
+    }
+
+    main { overflow: hidden; }
+    section { padding: 92px max(24px, calc((100% - 1060px) / 2)); }
+    .section-kicker { margin-bottom: 10px; color: var(--teal-dark); font-size: 14px; font-weight: 750; }
+    .lead { max-width: 800px; margin-bottom: 38px; color: var(--ink-soft); font-size: 18px; }
+
+    .objective { background: var(--white); }
+    .objective-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(290px, 0.85fr); gap: 56px; align-items: start; }
+    .objective-copy { font-size: 18px; color: var(--ink-soft); }
+    .objective-copy strong { color: var(--teal-dark); }
+    .measure-list { margin: 0; border-top: 1px solid var(--line); }
+    .measure-list div { display: grid; grid-template-columns: 132px 1fr; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .measure-list dt { color: var(--teal-dark); font-weight: 750; }
+    .measure-list dd { margin: 0; color: var(--ink-soft); }
+
+    .workflow { background: var(--paper); }
+    .workflow-list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin: 42px 0 0; padding: 0; list-style: none; }
+    .workflow-list li { position: relative; min-height: 190px; padding: 18px 18px 18px 0; border-top: 4px solid var(--teal); }
+    .workflow-list li + li { padding-left: 18px; }
+    .workflow-list li + li::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: 0;
+      width: 1px;
+      height: calc(100% + 3px);
+      background: var(--line);
+    }
+    .workflow-list li:nth-child(2) { border-top-color: var(--leaf); }
+    .workflow-list li:nth-child(3) { border-top-color: var(--sun); }
+    .workflow-list li:nth-child(4) { border-top-color: var(--coral); }
+    .workflow-list li:nth-child(5) { border-top-color: var(--teal-dark); }
+    .workflow-list li:nth-child(6) { border-top-color: var(--leaf); }
+    .step-number { display: block; margin-bottom: 18px; color: var(--ink-soft); font-size: 13px; font-weight: 750; }
+    .workflow-list p { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+    .workflow-note { max-width: 830px; margin: 34px 0 0; color: var(--ink-soft); }
+
+    .tasks { background: var(--white); }
+    .task-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .task-card {
+      display: flex;
+      min-height: 290px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+    }
+    .task-card:nth-child(2) { background: #eff6f4; }
+    .task-tag { margin-bottom: 18px; color: var(--teal-dark); font-size: 14px; font-weight: 750; }
+    .task-card p { margin-bottom: 24px; color: var(--ink-soft); }
+    .task-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      margin-top: auto;
+      padding: 10px 14px;
+      border: 1px solid var(--teal-dark);
+      border-radius: 5px;
+      color: var(--teal-dark);
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .task-link:hover { background: var(--teal-dark); color: var(--white); }
+
+    .next-stage { color: var(--white); background: var(--deep); }
+    .next-stage .section-kicker { color: #bde4dc; }
+    .next-stage .lead { color: #d5e7e5; }
+    .next-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; }
+    .next-grid div { padding-left: 18px; border-left: 3px solid var(--teal); }
+    .next-grid div:nth-child(2) { border-left-color: var(--sun); }
+    .next-grid div:nth-child(3) { border-left-color: var(--coral); }
+    .next-grid h3 { color: var(--white); }
+    .next-grid p { margin: 0; color: #d5e7e5; }
+
+    footer { padding: 28px 24px; color: #b8d1ce; background: var(--deep); border-top: 1px solid rgba(214, 240, 237, 0.2); text-align: center; font-size: 14px; }
+
+    @media (max-width: 1000px) {
+      .workflow-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+      .workflow-list li { min-height: 158px; padding: 18px 0 0; }
+      .workflow-list li + li { padding-left: 0; }
+      .workflow-list li + li::before { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .site-nav { align-items: flex-start; flex-direction: column; gap: 8px; padding: 10px 20px; }
+      .nav-links { justify-content: flex-start; gap: 8px 16px; }
+      .hero { min-height: 620px; height: calc(100vh - 112px); padding: 42px 24px; }
+      .hero-panel--challenger { background-position: 36% center; }
+      .hero-panel--ventofoil { background-position: 46% center; }
+      .hero-panel--coflow { background-position: 63% center; }
+      .hero-panel--windwings { background-position: 58% center; }
+      .hero-panel--rotor { background-position: 55% center; }
+      h1 { font-size: 38px; }
+      h2 { font-size: 28px; }
+      .hero-copy { font-size: 18px; }
+      section { padding: 70px 24px; }
+      .objective-grid, .task-grid, .next-grid { grid-template-columns: 1fr; gap: 26px; }
+      .workflow-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .workflow-list li { min-height: 165px; }
+      .measure-list div { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-nav">
+    <a class="site-mark" href="index.html">瀚海锐翼 <span>Co-Flow Jet 辅助翼设计</span></a>
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#objective">项目目标</a>
+      <a href="#workflow">设计链路</a>
+      <a href="#tasks">课前任务</a>
+      <a href="#next-stage">后续阶段</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-gallery" aria-hidden="true">
+        <div class="hero-panel hero-panel--challenger"></div>
+        <div class="hero-panel hero-panel--ventofoil"></div>
+        <div class="hero-panel hero-panel--coflow"></div>
+        <div class="hero-panel hero-panel--windwings"></div>
+        <div class="hero-panel hero-panel--rotor"></div>
+      </div>
+      <div class="hero-content">
+        <p class="eyebrow">船舶风力辅助推进设计项目</p>
+        <h1 id="page-title"><span class="hero-title-line">瀚海锐翼</span><span class="hero-title-sub">船舶风力辅助翼设计</span></h1>
+        <p class="hero-copy">以 Co-Flow Jet（CFJ）辅助翼为对象，围绕真实船舶的燃油消耗降低，完成从一维估算、三维结构、CFD 仿真到试验验证的完整设计链。</p>
+        <p class="hero-standard">判断标准不是单独的升力提高，而是扣除射流、传动和辅助设备功耗后，辅助翼能否稳定降低船舶燃油消耗。</p>
+      </div>
+    </section>
+
+    <section class="objective" id="objective" aria-labelledby="objective-title">
+      <div class="objective-grid">
+        <div>
+          <p class="section-kicker">PROJECT OBJECTIVE</p>
+          <h2 id="objective-title">以燃油消耗降低作为最终约束</h2>
+          <p class="objective-copy">CFJ 辅助翼把硬质翼帆和主动吸喷流动控制结合起来。项目不以单一气动系数作为结论，而是将<strong>气动收益、射流功耗、结构载荷、船舶操纵与航线风况</strong>放入同一套判断框架，回答“是否真正节油”。</p>
+        </div>
+        <dl class="measure-list">
+          <div><dt>燃油消耗</dt><dd>项目最终面向的运营指标</dd></div>
+          <div><dt>净推进收益</dt><dd>扣除泵功率与辅助功耗后的可用收益</dd></div>
+          <div><dt>安全约束</dt><dd>横倾、舵角、根部弯矩与甲板适配</dd></div>
+          <div><dt>验证闭环</dt><dd>一维评估、CFD 结果与模型试验互相校核</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="workflow" id="workflow" aria-labelledby="workflow-title">
+      <p class="section-kicker">DESIGN CHAIN</p>
+      <h2 id="workflow-title">从航线风况走到可验证的节油方案</h2>
+      <p class="lead">设计从船舶和航线的真实条件开始。NACA 4412 页面用于建立 CFD 基准能力，后续再进入 CFJ 辅助翼、三维结构和模型试验的工程闭环。</p>
+      <ol class="workflow-list">
+        <li><span class="step-number">01</span><h3>船型与风况</h3><p>确定航速、航线风况、甲板空间和操纵约束。</p></li>
+        <li><span class="step-number">02</span><h3>一维净节能</h3><p>由表观风、帆力投影和主机修正估算燃油收益。</p></li>
+        <li><span class="step-number">03</span><h3>CFJ 翼型策略</h3><p>筛选槽口位置、动量系数和泵功耗边界。</p></li>
+        <li><span class="step-number">04</span><h3>三维翼帆结构</h3><p>完成翼帆本体、基座、传动与吸喷管路的设计。</p></li>
+        <li><span class="step-number">05</span><h3>CFD 仿真</h3><p>评估端部效应、甲板干扰、载荷与非定常流动。</p></li>
+        <li><span class="step-number">06</span><h3>试验验证</h3><p>同步测量气动力、流量、压差和实际射流功耗。</p></li>
+      </ol>
+      <p class="workflow-note">最终输出应回到船舶层面：在典型航线与风况概率下，辅助翼能减少多少燃油消耗，以及这一收益是否满足结构、操纵与维护约束。</p>
+    </section>
+
+    <section class="tasks" id="tasks" aria-labelledby="tasks-title">
+      <p class="section-kicker">PRE-CLASS TASKS</p>
+      <h2 id="tasks-title">进入设计链之前的两项基础任务</h2>
+      <p class="lead">两个任务分别建立船舶总体性能视角和翼型数值模拟能力，是后续 CFJ 辅助翼设计的共同起点。</p>
+      <div class="task-grid">
+        <article class="task-card">
+          <p class="task-tag">课前任务 01</p>
+          <h3>船舶一维设计</h3>
+          <p>从船型、航线风况与表观风出发，完成帆力投影、主机修正与净节能收益的初步判断。</p>
+          <a class="task-link" href="ship-1d-design-learning.html">进入一维设计任务</a>
+        </article>
+        <article class="task-card">
+          <p class="task-tag">课前任务 02</p>
+          <h3>NACA 4412 CFD 基准</h3>
+          <p>建立翼型数值模拟的基准流程，理解升阻力、网格、边界条件和结果验证，为 CFJ 参数研究打下基础。</p>
+          <a class="task-link" href="naca4412-cfd-foundation.html">进入 CFD 基准任务</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="next-stage" id="next-stage" aria-labelledby="next-stage-title">
+      <p class="section-kicker">NEXT STAGE</p>
+      <h2 id="next-stage-title">从基准任务推进到工程验证</h2>
+      <p class="lead">课前任务完成后，项目将围绕 CFJ 辅助翼的气动、结构与验证继续展开。</p>
+      <div class="next-grid">
+        <div><h3>CFJ 参数设计</h3><p>喷口、吸口、槽宽、动量系数和泵效率的协同优化。</p></div>
+        <div><h3>三维结构与建模</h3><p>翼帆、基座、回转机构、管路与甲板连接的一体化设计。</p></div>
+        <div><h3>CFD 与试验互证</h3><p>以载荷、流场、射流功耗和燃油收益共同验证方案。</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>瀚海锐翼 - 面向燃油消耗降低的 Co-Flow Jet 船舶风力辅助翼设计</footer>
+</body>
+</html>

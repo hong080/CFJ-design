@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向能动与飞动专业低年级学生的船舶一维设计学习页面。">
+  <title>船舶一维设计：从阻力到油耗</title>
+  <style>
+    :root {
+      --ink: #132f38;
+      --ink-soft: #45616a;
+      --paper: #f5f8f7;
+      --white: #ffffff;
+      --line: #d8e2e1;
+      --teal: #147b7e;
+      --teal-dark: #0b555d;
+      --coral: #e8653d;
+      --sun: #e8b84a;
+      --leaf: #6c9270;
+      --deep: #09232b;
+      --shadow: 0 12px 28px rgba(10, 42, 49, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 64px;
+      padding: 12px max(24px, calc((100% - 1160px) / 2));
+      background: rgba(245, 248, 247, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .site-mark { font-size: 15px; font-weight: 700; letter-spacing: 0; text-decoration: none; white-space: nowrap; }
+    .nav-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px 24px; font-size: 14px; }
+    .nav-links a { text-decoration: none; color: var(--ink-soft); }
+    .nav-links a:hover { color: var(--teal-dark); }
+    .hero {
+      position: relative;
+      display: grid;
+      align-items: end;
+      min-height: 580px;
+      height: min(760px, calc(100vh - 132px));
+      padding: 52px max(24px, calc((100% - 1160px) / 2));
+      overflow: hidden;
+      isolation: isolate;
+      color: var(--white);
+      background: #164e5a url("assets/valemax-hero.png") center center / cover no-repeat;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: rgba(4, 27, 35, 0.46);
+    }
+    .hero-content { max-width: 720px; }
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 16px;
+      color: #d6f0ed;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 22px; font-size: 50px; line-height: 1.12; letter-spacing: 0; }
+    h2 { margin-bottom: 16px; font-size: 32px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin-bottom: 8px; font-size: 19px; line-height: 1.35; letter-spacing: 0; }
+    .hero-copy { max-width: 640px; margin-bottom: 28px; font-size: 20px; line-height: 1.6; }
+    .hero-question {
+      display: inline-flex;
+      max-width: 560px;
+      padding: 13px 17px;
+      border-left: 4px solid var(--sun);
+      background: rgba(9, 35, 43, 0.72);
+      font-size: 16px;
+    }
+    .scroll-cue { margin-top: 38px; font-size: 14px; color: #d6f0ed; }
+    main { overflow: hidden; }
+    section { padding: 92px max(24px, calc((100% - 1060px) / 2)); }
+    .section-kicker { margin-bottom: 10px; color: var(--teal-dark); font-size: 14px; font-weight: 700; }
+    .lead { max-width: 790px; margin-bottom: 38px; color: var(--ink-soft); font-size: 18px; }
+    .problem { background: var(--white); }
+    .problem-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 52px; align-items: start; }
+    .prompt-list { display: grid; gap: 18px; }
+    .prompt-item { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; }
+    .prompt-number {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid var(--teal);
+      border-radius: 50%;
+      color: var(--teal-dark);
+      font-weight: 700;
+    }
+    .prompt-item p { margin: 0; color: var(--ink-soft); }
+    .baseline {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eff6f4;
+    }
+    .baseline h3 { color: var(--teal-dark); }
+    .baseline dl { display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; margin: 20px 0 0; }
+    .baseline dt { color: var(--ink-soft); }
+    .baseline dd { margin: 0; font-weight: 700; }
+    .logic { background: var(--paper); }
+    .logic-flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+      margin: 36px 0 16px;
+      padding: 0;
+      list-style: none;
+    }
+    .logic-step { position: relative; min-height: 168px; padding: 22px 18px 18px; border-top: 4px solid var(--teal); background: var(--white); box-shadow: var(--shadow); }
+    .logic-step:nth-child(2) { border-top-color: var(--leaf); }
+    .logic-step:nth-child(3) { border-top-color: var(--sun); }
+    .logic-step:nth-child(4) { border-top-color: var(--coral); }
+    .logic-step:nth-child(5) { border-top-color: var(--teal-dark); }
+    .logic-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -17px;
+      z-index: 1;
+      color: var(--ink-soft);
+      font-size: 26px;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+    .step-index { margin-bottom: 18px; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+    .logic-step p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+    .logic-note { margin: 0; color: var(--ink-soft); font-size: 15px; }
+    .formula-section { background: var(--white); }
+    .formula-list { display: grid; gap: 20px; }
+    .formula-row { display: grid; grid-template-columns: 120px minmax(230px, 0.9fr) minmax(280px, 1.1fr); gap: 26px; align-items: center; padding: 25px 0; border-top: 1px solid var(--line); }
+    .formula-row:last-child { border-bottom: 1px solid var(--line); }
+    .formula-number { color: var(--teal-dark); font-size: 14px; font-weight: 700; }
+    .formula { color: var(--deep); font-family: "Cambria Math", Cambria, Georgia, serif; white-space: nowrap; }
+    .formula-main { display: block; font-size: 32px; font-weight: 700; line-height: 1.28; }
+    .formula-sub { display: block; margin-top: 10px; color: var(--ink-soft); font-family: "Cambria Math", Cambria, Georgia, serif; font-size: 17px; line-height: 1.45; white-space: normal; }
+    .formula-why { margin: 0; color: var(--ink-soft); }
+    .formula-why strong { color: var(--ink); }
+    .note-band {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-top: 30px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--sun);
+      background: #fff7dd;
+    }
+    .note-band strong { white-space: nowrap; }
+    .note-band p { margin: 0; color: #665325; }
+    .lab { background: #153d43; color: var(--white); }
+    .lab .section-kicker { color: #bde4dc; }
+    .lab .lead { color: #d5e7e5; }
+    .lab-layout { display: grid; grid-template-columns: 0.88fr 1.12fr; gap: 52px; align-items: start; }
+    .control-panel { padding: 28px; border: 1px solid rgba(214, 240, 237, 0.35); border-radius: 8px; background: rgba(7, 31, 38, 0.45); }
+    .control-panel h3 { margin-bottom: 20px; color: var(--white); }
+    .range-label { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 10px; color: #d5e7e5; font-size: 15px; }
+    .range-value { color: var(--white); font-weight: 700; }
+    input[type="range"] { width: 100%; accent-color: var(--sun); }
+    .parameter-list { display: grid; gap: 8px; margin: 28px 0 0; padding: 0; list-style: none; color: #d5e7e5; font-size: 14px; }
+    .parameter-list strong { color: var(--white); }
+    .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .result {
+      min-height: 132px;
+      padding: 22px;
+      border: 1px solid rgba(214, 240, 237, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .result:first-child { border-top: 4px solid var(--sun); }
+    .result:nth-child(2) { border-top: 4px solid var(--coral); }
+    .result:nth-child(3) { border-top: 4px solid #bde4dc; }
+    .result:nth-child(4) { border-top: 4px solid var(--leaf); }
+    .result-label { margin-bottom: 8px; color: #c5dddd; font-size: 14px; }
+    .result-value { color: var(--white); font-size: 31px; font-weight: 700; line-height: 1.12; }
+    .result-unit { margin-left: 4px; color: #c5dddd; font-size: 15px; font-weight: 400; }
+    .lab-reading { margin: 24px 0 0; color: #d5e7e5; font-size: 16px; }
+    .lab-reading strong { color: #fff2be; }
+    .symbols { background: var(--white); }
+    .symbol-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .symbol-table th, .symbol-table td { padding: 15px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .symbol-table th { color: var(--teal-dark); font-size: 14px; }
+    .symbol-table td:first-child { width: 18%; color: var(--deep); font-family: "Cambria Math", Cambria, Georgia, serif; font-size: 18px; font-weight: 700; }
+    .symbol-table td:nth-child(2) { width: 31%; }
+    .symbol-table td:last-child { color: var(--ink-soft); }
+    .wrap-up { background: #e8f0ed; }
+    .wrap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    .wrap-item { padding: 6px 6px 6px 20px; border-left: 3px solid var(--teal); }
+    .wrap-item:nth-child(2) { border-left-color: var(--coral); }
+    .wrap-item:nth-child(3) { border-left-color: var(--sun); }
+    .wrap-item p { margin-bottom: 0; color: var(--ink-soft); }
+    .quick-check { margin-top: 50px; padding-top: 32px; border-top: 1px solid #c9dad5; }
+    .quick-check p { color: var(--ink-soft); }
+    .answer-button { padding: 10px 15px; border: 1px solid var(--teal-dark); border-radius: 5px; background: transparent; color: var(--teal-dark); font-weight: 700; }
+    .answer-button:hover, .answer-button[aria-expanded="true"] { background: var(--teal-dark); color: var(--white); }
+    .answer { max-width: 720px; margin: 16px 0 0; padding-left: 18px; border-left: 3px solid var(--coral); color: var(--ink-soft); }
+    .answer[hidden] { display: none; }
+    .assignment { background: var(--white); }
+    .assignment-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin: 36px 0 48px; }
+    .assignment-step { padding: 4px 6px 4px 20px; border-left: 3px solid var(--teal); }
+    .assignment-step:nth-child(2) { border-left-color: var(--sun); }
+    .assignment-step:nth-child(3) { border-left-color: var(--coral); }
+    .assignment-index { margin-bottom: 10px; color: var(--teal-dark); font-size: 13px; font-weight: 700; }
+    .assignment-step p { margin-bottom: 0; color: var(--ink-soft); }
+    .assignment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+    .assignment-block { padding-top: 22px; border-top: 1px solid var(--line); }
+    .assignment-block h3 { color: var(--teal-dark); }
+    .assignment-list { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+    .assignment-list li { padding-left: 18px; color: var(--ink-soft); position: relative; }
+    .assignment-list li::before { content: ""; position: absolute; top: 0.72em; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--coral); }
+    .assignment-list strong { color: var(--ink); }
+    .assignment-requirements { margin-top: 44px; padding-top: 30px; border-top: 1px solid var(--line); }
+    .requirement-list { display: grid; gap: 12px; margin: 0; padding-left: 24px; color: var(--ink-soft); }
+    .requirement-list strong { color: var(--ink); }
+    .deliverable { margin-top: 28px; padding: 18px 20px; border-left: 4px solid var(--sun); background: #fff7dd; color: #665325; }
+    .deliverable p { margin: 0; }
+    .references { background: var(--paper); }
+    .reference-entry { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 28px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .reference-type { margin-bottom: 8px; color: var(--teal-dark); font-size: 14px; font-weight: 700; }
+    .reference-entry h3 { margin-bottom: 7px; }
+    .reference-entry p:last-child { max-width: 700px; margin-bottom: 0; color: var(--ink-soft); }
+    .reference-download { flex: 0 0 auto; padding: 11px 16px; border: 1px solid var(--teal-dark); border-radius: 5px; color: var(--teal-dark); font-weight: 700; text-decoration: none; }
+    .reference-download:hover { background: var(--teal-dark); color: var(--white); }
+    footer { padding: 28px 24px; background: var(--deep); color: #b8d1ce; text-align: center; font-size: 14px; }
+    .source-note { max-width: 1060px; margin: 0 auto; }
+    @media (max-width: 900px) {
+      h1 { font-size: 42px; }
+      .problem-grid, .lab-layout { grid-template-columns: 1fr; gap: 32px; }
+      .logic-flow { grid-template-columns: 1fr; max-width: 580px; }
+      .logic-step { min-height: 0; }
+      .logic-step:not(:last-child)::after { top: auto; right: auto; bottom: -21px; left: 50%; transform: translateX(-50%) rotate(90deg); }
+      .formula-row { grid-template-columns: 105px 1fr; gap: 10px 22px; }
+      .formula-why { grid-column: 2; }
+      .wrap-grid, .assignment-flow, .assignment-grid { grid-template-columns: 1fr; gap: 18px; }
+      .reference-entry { align-items: flex-start; flex-direction: column; gap: 18px; }
+    }
+    @media (max-width: 640px) {
+      .site-nav { align-items: flex-start; flex-direction: column; gap: 8px; padding: 10px 20px; }
+      .nav-links { justify-content: flex-start; gap: 8px 16px; }
+      .hero { min-height: 600px; height: calc(100vh - 132px); padding: 36px 24px; background-position: 59% center; }
+      section { padding: 68px 24px; }
+      h1 { font-size: 34px; }
+      h2 { font-size: 28px; }
+      .hero-copy { font-size: 18px; }
+      .formula-row { grid-template-columns: 1fr; gap: 9px; }
+      .formula-why { grid-column: auto; }
+      .formula { white-space: normal; overflow-wrap: anywhere; }
+      .formula-main { font-size: 27px; }
+      .formula-sub { font-size: 15px; }
+      .results { grid-template-columns: 1fr; }
+      .symbol-table { font-size: 14px; }
+      .symbol-table th, .symbol-table td { padding: 12px 7px; }
+      .symbol-table td:first-child { width: auto; font-size: 16px; }
+      .symbol-table td:nth-child(2) { width: auto; }
+      .note-band { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="页面导航">
+    <a class="site-mark" href="index.html">瀚海锐翼 / 船舶一维设计</a>
+    <div class="nav-links">
+      <a href="index.html">项目首页</a>
+      <a href="#problem">项目问题</a>
+      <a href="#logic">逻辑主线</a>
+      <a href="#formula">主要公式</a>
+      <a href="#lab">动手感受</a>
+      <a href="#assignment">课程任务</a>
+      <a href="#references">参考资料</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-content">
+      <p class="eyebrow">面向能动 / 飞动专业低年级学生</p>
+      <h1>船舶一维设计：从阻力到油耗</h1>
+      <p class="hero-copy">先别急着记公式。这个项目要做的，是把一艘大船“以目标速度持续航行”这件事，翻译成可以估算的推力、功率与燃油消耗。</p>
+      <div class="hero-question">核心问题：如果一艘 40 万吨级散货船以设定航速航行，主机需要输出多少功率？这会带来多少燃油消耗？</div>
+      <p class="scroll-cue">向下阅读：把复杂的船舶系统拆成一条连续的能量链。</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="problem" class="problem">
+      <div class="problem-grid">
+        <div>
+          <p class="section-kicker">01 / 项目真正要解决什么</p>
+          <h2>用一个足够简洁的模型，建立“性能基线”</h2>
+          <p class="lead">真实船舶的阻力、螺旋桨、主机和海况会彼此耦合。课程项目先采用一维近似，把最关键的因果关系串起来。这样，后续无论讨论节能、助推或推进方案，都有一个可以比较的基准。</p>
+          <div class="prompt-list">
+            <div class="prompt-item">
+              <span class="prompt-number">1</span>
+              <div><h3>船体在水中有多大？</h3><p>尺寸和方形系数决定排水体积与湿表面积，也决定水对船体“黏住”的面积。</p></div>
+            </div>
+            <div class="prompt-item">
+              <span class="prompt-number">2</span>
+              <div><h3>为了保持航速，要克服多大阻力？</h3><p>先估摩擦阻力，再用系数补进船体形状的影响，得到一维模型中的总阻力。</p></div>
+            </div>
+            <div class="prompt-item">
+              <span class="prompt-number">3</span>
+              <div><h3>阻力会变成多少燃油？</h3><p>推力平衡给出轴功率，主机负载率决定单位发电量的油耗，最后得到基线燃油消耗。</p></div>
+            </div>
+          </div>
+        </div>
+        <aside class="baseline" aria-label="本项目的基准船参数">
+          <p class="section-kicker">基准对象</p>
+          <h3>Valemax 超大型散货船</h3>
+          <dl>
+            <dt>垂线间长 L<sub>pp</sub></dt><dd>352 m</dd>
+            <dt>水线长 L<sub>WL</sub></dt><dd>358 m</dd>
+            <dt>型宽 B</dt><dd>65 m</dd>
+            <dt>吃水 T</dt><dd>23 m</dd>
+            <dt>方形系数 C<sub>B</sub></dt><dd>0.85</dd>
+            <dt>设计主机功率</dt><dd>30,100 kW</dd>
+            <dt>推进效率 η<sub>prop</sub></dt><dd>75%</dd>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section id="logic" class="logic">
+      <p class="section-kicker">02 / 一眼看懂逻辑主线</p>
+      <h2>每个公式都在回答前一步留下的问题</h2>
+      <p class="lead">不要把这看成五段独立计算。它其实是一条因果链：几何决定与水接触的尺度，阻力决定推力，推力决定功率，功率和负载率决定油耗。</p>
+      <ol class="logic-flow" aria-label="船舶一维设计的计算流程">
+        <li class="logic-step"><div class="step-index">STEP 01</div><h3>船型几何</h3><p>L、B、T、C<sub>B</sub> 描述船有多大、浸在水里有多深。</p></li>
+        <li class="logic-step"><div class="step-index">STEP 02</div><h3>湿表面积</h3><p>船壳与水接触的面积，是摩擦阻力的直接尺度。</p></li>
+        <li class="logic-step"><div class="step-index">STEP 03</div><h3>船体阻力</h3><p>速度越高、接触面积越大，船需要克服的阻力越大。</p></li>
+        <li class="logic-step"><div class="step-index">STEP 04</div><h3>推进功率</h3><p>稳态航行时，螺旋桨推力抵消阻力；力乘速度变成功率。</p></li>
+        <li class="logic-step"><div class="step-index">STEP 05</div><h3>主机油耗</h3><p>主机负载率决定 SFOC，最终得到每小时的燃油消耗。</p></li>
+      </ol>
+      <p class="logic-note">读图诀窍：任何一个参数变化，都沿箭头向后传播。航速变化尤其明显，因为它同时影响雷诺数、摩擦阻力和功率。</p>
+    </section>
+
+    <section id="formula" class="formula-section">
+      <p class="section-kicker">03 / 主要公式：知道“为什么算”，再记“怎么算”</p>
+      <h2>五步推导，建立完整闭环</h2>
+      <p class="lead">以下保留原文件中的一维计算骨架。符号不熟没关系，先抓住每一步的输入、输出和物理意义。</p>
+      <div class="formula-list">
+        <article class="formula-row">
+          <div class="formula-number">第一步<br>排水量与湿表面积</div>
+          <div class="formula"><span class="formula-main">A<sub>wet</sub> = 1.7 L<sub>pp</sub>T + ∇ / T</span><span class="formula-sub">∇ = L<sub>pp</sub>B T C<sub>B</sub></span></div>
+          <p class="formula-why"><strong>要回答：</strong>船体浸在水里的体积和与水接触的面积有多大？A<sub>wet</sub> 是后面摩擦阻力的“面积底盘”。</p>
+        </article>
+        <article class="formula-row">
+          <div class="formula-number">第二步<br>雷诺数与摩擦系数</div>
+          <div class="formula"><span class="formula-main">C<sub>F</sub> = 0.075 / [log<sub>10</sub>(Re) − 2]²</span><span class="formula-sub">Re = U<sub>ship</sub>L<sub>WL</sub> / ν</span></div>
+          <p class="formula-why"><strong>要回答：</strong>水流绕过船体时，黏性效应有多强？Re 将“船有多长、跑多快、流体有多黏”合成一个无量纲数。</p>
+        </article>
+        <article class="formula-row">
+          <div class="formula-number">第三步<br>船体阻力</div>
+          <div class="formula"><span class="formula-main">R<sub>H,y</sub> = k<sub>1</sub>R<sub>f</sub></span><span class="formula-sub">R<sub>f</sub> = ½ρA<sub>wet</sub>U²C<sub>F</sub></span></div>
+          <p class="formula-why"><strong>要回答：</strong>为了让船保持速度，水会“拉住”船多大的力？文件中将附体阻力和造波阻力简化为 0，再用 k<sub>1</sub> 修正摩擦阻力。</p>
+        </article>
+        <article class="formula-row">
+          <div class="formula-number">第四步<br>推进与主机功率</div>
+          <div class="formula"><span class="formula-main">P<sub>shaft</sub> = F<sub>y,prop</sub>U<sub>ship</sub> / η<sub>prop</sub></span><span class="formula-sub">F<sub>y,prop</sub> = R<sub>H,y</sub></span></div>
+          <p class="formula-why"><strong>要回答：</strong>螺旋桨必须给多大推力，轴上要提供多少功？稳态时推力与阻力平衡；效率小于 1，表示有一部分能量在推进过程中损失。</p>
+        </article>
+        <article class="formula-row">
+          <div class="formula-number">第五步<br>负载率与油耗</div>
+          <div class="formula"><span class="formula-main">m<sub>fuel</sub> = SFOC × P<sub>engine</sub></span><span class="formula-sub">x<sub>opt</sub> = P<sub>engine</sub> / P<sub>engine,design</sub><br>SFOC = ax² + bx + c</span></div>
+          <p class="formula-why"><strong>要回答：</strong>主机在当前工况下每小时烧多少油？负载率 x 决定单位电量油耗，随后 m<sub>fuel</sub> = SFOC × P<sub>engine</sub>。</p>
+        </article>
+      </div>
+      <div class="note-band">
+        <strong>一个关键提醒</strong>
+        <p>功率不是“力”本身。抵抗相同的力，速度越高，每秒完成的做功越多，所以功率需求会快速上升。这正是船舶节能设计非常重视航速的原因。</p>
+      </div>
+    </section>
+
+    <section id="lab" class="lab">
+      <p class="section-kicker">04 / 动手感受：只改航速，会发生什么？</p>
+      <h2>用同一条逻辑链，读出数量级</h2>
+      <p class="lead">下面的计算器固定基准船型参数，只改变航速。它按文件中的简化模型估算，目的不是替代工程软件，而是让你看到变量如何一环扣一环。</p>
+      <div class="lab-layout">
+        <div class="control-panel">
+          <h3>设定航速</h3>
+          <label class="range-label" for="speed"><span>U<sub>ship</sub></span><span id="speed-output" class="range-value">5.0 m/s</span></label>
+          <input id="speed" type="range" min="2" max="8" step="0.1" value="5" aria-describedby="speed-description">
+          <p id="speed-description" class="sr-only">拖动滑块改变船舶航速。</p>
+          <ul class="parameter-list" aria-label="固定的模型参数">
+            <li><strong>ρ</strong> 海水密度：1,025 kg/m³</li>
+            <li><strong>ν</strong> 水的运动黏度：1.139 × 10<sup>−6</sup> m²/s</li>
+            <li><strong>k<sub>1</sub></strong> 船体形状修正：1.68</li>
+            <li><strong>η<sub>prop</sub></strong> 推进效率：0.75</li>
+            <li><strong>P<sub>design</sub></strong> 主机额定功率：30.10 MW</li>
+          </ul>
+        </div>
+        <div>
+          <div class="results" aria-live="polite" aria-label="计算结果">
+            <div class="result"><div class="result-label">船体阻力 R<sub>H,y</sub></div><div class="result-value"><span id="resistance-value">1.04</span><span class="result-unit">MN</span></div></div>
+            <div class="result"><div class="result-label">轴功率 P<sub>shaft</sub></div><div class="result-value"><span id="power-value">6.90</span><span class="result-unit">MW</span></div></div>
+            <div class="result"><div class="result-label">主机负载率 x</div><div class="result-value"><span id="load-value">22.9</span><span class="result-unit">%</span></div></div>
+            <div class="result"><div class="result-label">基线燃油消耗</div><div class="result-value"><span id="fuel-value">1.28</span><span class="result-unit">t/h</span></div></div>
+          </div>
+          <p id="lab-reading" class="lab-reading">当前航速为 <strong>5.0 m/s</strong>。请观察：速度提高后，阻力约随 U² 增长，而功率又多乘了一个 U，因此对航速非常敏感。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="symbols">
+      <p class="section-kicker">05 / 读公式时先盯住这几类量</p>
+      <h2>符号不是障碍，它们是不同层次的问题</h2>
+      <table class="symbol-table">
+        <thead><tr><th>符号</th><th>代表什么</th><th>在逻辑链中的位置</th></tr></thead>
+        <tbody>
+          <tr><td>L, B, T, C<sub>B</sub></td><td>船长、船宽、吃水、方形系数</td><td>输入：定义船型的几何尺度。</td></tr>
+          <tr><td>A<sub>wet</sub></td><td>船体湿表面积</td><td>几何输出：决定水与船壳的接触面积。</td></tr>
+          <tr><td>Re, C<sub>F</sub></td><td>雷诺数、摩擦阻力系数</td><td>流体性质：把尺度和速度转化为阻力计算中的系数。</td></tr>
+          <tr><td>R<sub>H,y</sub></td><td>船体阻力</td><td>力的层次：外界要求推进器抵消的阻碍。</td></tr>
+          <tr><td>P<sub>shaft</sub>, P<sub>engine</sub></td><td>轴功率、主机功率</td><td>能量层次：把“力”翻译成“每秒需要做多少功”。</td></tr>
+          <tr><td>x, SFOC, m<sub>fuel</sub></td><td>负载率、单位油耗、燃油消耗</td><td>经济层次：把主机工况翻译为每小时的燃料需求。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="wrap-up">
+      <p class="section-kicker">06 / 带着这条主线继续做项目</p>
+      <h2>后续方案，都是在这条链上施加影响</h2>
+      <div class="wrap-grid">
+        <article class="wrap-item"><h3>改船型或载况</h3><p>先影响排水量和湿表面积，继而影响阻力。</p></article>
+        <article class="wrap-item"><h3>改推进或增加助推</h3><p>直接改变需要由主机提供的净推力与轴功率。</p></article>
+        <article class="wrap-item"><h3>改运行策略</h3><p>改变航速与主机负载率，最终反映为燃油消耗变化。</p></article>
+      </div>
+      <div class="quick-check">
+        <h3>一分钟自测</h3>
+        <p>如果航速提高，而船型和推进效率不变，最先直接变化的是哪一个量？它为什么会继续影响油耗？</p>
+        <button id="answer-button" class="answer-button" type="button" aria-expanded="false" aria-controls="answer">显示思路</button>
+        <p id="answer" class="answer" hidden>最先直接变化的是雷诺数与摩擦阻力；阻力变大后，为保持稳态，螺旋桨需要更大推力。推力乘以更高的速度，又会使功率需求进一步增加，主机负载率和燃油消耗随之上升。</p>
+      </div>
+    </section>
+
+    <section id="assignment" class="assignment">
+      <p class="section-kicker">07 / 课程任务</p>
+      <h2>用 Python 实现一个船舶一维性能估算器</h2>
+      <p class="lead">请独立编写一个 Python 小软件。用户输入船体、运行与发动机参数后，程序应沿着本页的计算链完成估算，并清楚输出船体阻力、主机负载、功率与燃油消耗量。</p>
+
+      <div class="assignment-flow" aria-label="课程任务的软件逻辑">
+        <article class="assignment-step"><p class="assignment-index">A / 输入</p><h3>读取参数</h3><p>接收船型几何、航速、流体参数、推进效率和发动机额定功率等数据。</p></article>
+        <article class="assignment-step"><p class="assignment-index">B / 计算</p><h3>复现一维模型</h3><p>依次计算湿表面积、雷诺数、摩擦阻力、总阻力、轴功率与负载率。</p></article>
+        <article class="assignment-step"><p class="assignment-index">C / 输出</p><h3>给出运行结果</h3><p>以规范单位报告阻力、功率、负载率、SFOC 与每小时燃油消耗。</p></article>
+      </div>
+
+      <div class="assignment-grid">
+        <div class="assignment-block">
+          <h3>必须支持的输入</h3>
+          <ul class="assignment-list">
+            <li><strong>船体参数：</strong>L<sub>pp</sub>、L<sub>WL</sub>、B、T、C<sub>B</sub></li>
+            <li><strong>运行参数：</strong>航速 U<sub>ship</sub>、海水密度 ρ、运动黏度 ν、船体修正系数 k<sub>1</sub></li>
+            <li><strong>推进参数：</strong>推进效率 η<sub>prop</sub></li>
+            <li><strong>发动机参数：</strong>额定功率 P<sub>engine,design</sub>，以及 SFOC 曲线系数 a、b、c</li>
+          </ul>
+        </div>
+        <div class="assignment-block">
+          <h3>必须输出的结果</h3>
+          <ul class="assignment-list">
+            <li><strong>船体阻力 R<sub>H,y</sub>：</strong>建议同时给出 N 与 MN</li>
+            <li><strong>轴功率 P<sub>shaft</sub>：</strong>以 kW 或 MW 给出</li>
+            <li><strong>发动机负载率 x：</strong>以百分数给出，并提示是否超过 100%</li>
+            <li><strong>燃油消耗：</strong>输出 SFOC（g/kWh）及 m<sub>fuel</sub>（kg/h 或 t/h）</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="assignment-requirements">
+        <h3>完成标准</h3>
+        <ol class="requirement-list">
+          <li><strong>保持计算链完整：</strong>不能跳过湿表面积、雷诺数、摩擦阻力或负载率等中间步骤。</li>
+          <li><strong>把每一步封装成清晰的函数：</strong>例如 <code>wet_area()</code>、<code>resistance()</code>、<code>shaft_power()</code>、<code>fuel_consumption()</code>。</li>
+          <li><strong>标明单位：</strong>输入、输出和终端显示都要写清单位，避免 N、kN、MW、kW 混用。</li>
+          <li><strong>完成基准验证：</strong>用本页 Valemax 参数和 5.0 m/s 航速运行一次，并解释结果是否落在约 1.04 MN 阻力、6.90 MW 轴功率的数量级。</li>
+        </ol>
+        <div class="deliverable"><p><strong>提交物：</strong>一个可直接运行的 <code>.py</code> 文件，以及简短说明文档（输入参数、计算方法、一次基准运行的结果截图或文本输出）。</p></div>
+      </div>
+    </section>
+
+    <section id="references" class="references">
+      <p class="section-kicker">08 / 参考文献与原始资料</p>
+      <h2>回到原始设计文件，核对模型假设</h2>
+      <p class="lead">本页的参数、公式和简化假设均据此课程资料整理。建议在完成软件任务前阅读原文，并在报告中说明自己采用的模型边界。</p>
+      <article class="reference-entry">
+        <div>
+          <p class="reference-type">课程资料 / PDF</p>
+          <h3>wap_1D_design_ship_part1</h3>
+          <p>船舶一维设计的原始资料，包含基准船参数、阻力估算、功率计算和燃油消耗模型。</p>
+        </div>
+        <a class="reference-download" href="references/wap_1D_design_ship_part1.pdf" download>下载参考 PDF</a>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p class="source-note">教学页依据《wap_1D_design_ship_part1》中的基准船参数、ITTC 1957 摩擦系数、简化阻力模型与 SFOC 曲线组织。交互结果用于理解数量级与逻辑关系。</p>
+  </footer>
+
+  <script>
+    (() => {
+      const constants = {
+        lpp: 352,
+        lwl: 358,
+        beam: 65,
+        draft: 23,
+        cb: 0.85,
+        rho: 1025,
+        nu: 1.139e-6,
+        k1: 1.68,
+        eta: 0.75,
+        ratedPowerKw: 30100
+      };
+      const sfocPoints = [
+        { x: 0.25, y: 185.1 },
+        { x: 0.50, y: 169.0 },
+        { x: 0.75, y: 166.5 },
+        { x: 1.00, y: 168.6 }
+      ];
+      const speed = document.getElementById('speed');
+      const speedOutput = document.getElementById('speed-output');
+      const resistanceValue = document.getElementById('resistance-value');
+      const powerValue = document.getElementById('power-value');
+      const loadValue = document.getElementById('load-value');
+      const fuelValue = document.getElementById('fuel-value');
+      const labReading = document.getElementById('lab-reading');
+      const answerButton = document.getElementById('answer-button');
+      const answer = document.getElementById('answer');
+
+      function solve3x3(matrix, vector) {
+        const augmented = matrix.map((row, index) => [...row, vector[index]]);
+        for (let pivot = 0; pivot < 3; pivot += 1) {
+          let maxRow = pivot;
+          for (let row = pivot + 1; row < 3; row += 1) {
+            if (Math.abs(augmented[row][pivot]) > Math.abs(augmented[maxRow][pivot])) maxRow = row;
+          }
+          [augmented[pivot], augmented[maxRow]] = [augmented[maxRow], augmented[pivot]];
+          const divisor = augmented[pivot][pivot];
+          for (let column = pivot; column < 4; column += 1) augmented[pivot][column] /= divisor;
+          for (let row = 0; row < 3; row += 1) {
+            if (row === pivot) continue;
+            const factor = augmented[row][pivot];
+            for (let column = pivot; column < 4; column += 1) augmented[row][column] -= factor * augmented[pivot][column];
+          }
+        }
+        return augmented.map(row => row[3]);
+      }
+
+      function quadraticSfoc(load) {
+        let s0 = 0; let s1 = 0; let s2 = 0; let s3 = 0; let s4 = 0;
+        let t0 = 0; let t1 = 0; let t2 = 0;
+        sfocPoints.forEach(({ x, y }) => {
+          s0 += 1; s1 += x; s2 += x * x; s3 += x * x * x; s4 += x * x * x * x;
+          t0 += y; t1 += x * y; t2 += x * x * y;
+        });
+        const [a, b, c] = solve3x3([[s4, s3, s2], [s3, s2, s1], [s2, s1, s0]], [t2, t1, t0]);
+        return a * load * load + b * load + c;
+      }
+
+      function updateModel() {
+        const u = Number(speed.value);
+        const volume = constants.lpp * constants.beam * constants.draft * constants.cb;
+        const wetArea = 1.7 * constants.lpp * constants.draft + volume / constants.draft;
+        const reynolds = u * constants.lwl / constants.nu;
+        const cf = 0.075 / Math.pow(Math.log10(reynolds) - 2, 2);
+        const frictionResistance = 0.5 * constants.rho * wetArea * u * u * cf;
+        const resistance = constants.k1 * frictionResistance;
+        const shaftPowerKw = resistance * u / constants.eta / 1000;
+        const load = shaftPowerKw / constants.ratedPowerKw;
+        const sfoc = quadraticSfoc(load);
+        const fuelTonnesPerHour = sfoc * shaftPowerKw / 1000000;
+
+        speedOutput.textContent = `${u.toFixed(1)} m/s`;
+        resistanceValue.textContent = (resistance / 1000000).toFixed(2);
+        powerValue.textContent = (shaftPowerKw / 1000).toFixed(2);
+        loadValue.textContent = (load * 100).toFixed(1);
+        fuelValue.textContent = fuelTonnesPerHour.toFixed(2);
+        labReading.innerHTML = `当前航速为 <strong>${u.toFixed(1)} m/s</strong>。请观察：速度提高后，阻力约随 U² 增长，而功率又多乘了一个 U，因此对航速非常敏感。`;
+      }
+
+      speed.addEventListener('input', updateModel);
+      answerButton.addEventListener('click', () => {
+        const isOpen = answerButton.getAttribute('aria-expanded') === 'true';
+        answerButton.setAttribute('aria-expanded', String(!isOpen));
+        answerButton.textContent = isOpen ? '显示思路' : '收起思路';
+        answer.hidden = isOpen;
+      });
+      updateModel();
+    })();
+  </script>
+</body>
+</html>

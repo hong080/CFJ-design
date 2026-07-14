@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>CFD计算流程｜NACA 4412翼型数值模拟课程任务</title>
+
+  <style>
+    :root {
+      --primary: #147b7e;
+      --primary-dark: #0b555d;
+      --primary-light: #eff6f4;
+      --secondary: #6c9270;
+      --secondary-light: #edf4ec;
+      --danger: #e8653d;
+      --danger-dark: #bd4f31;
+
+      --text: #132f38;
+      --muted: #45616a;
+      --line: #d8e2e1;
+      --bg: #f5f8f7;
+      --bg-soft: #ffffff;
+      --card: #ffffff;
+
+      --shadow: 0 12px 28px rgba(10, 42, 49, 0.11);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+      line-height: 1.75;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    /* =========================
+       导航栏
+    ========================= */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 99;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      color: var(--text);
+      font-size: 1.08rem;
+      font-weight: 850;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .brand strong {
+      color: var(--primary);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .nav-links a {
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    /* =========================
+       首屏
+    ========================= */
+    .hero-bg {
+      border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 10% 20%, rgba(8, 127, 197, 0.13), transparent 25rem),
+        radial-gradient(circle at 88% 40%, rgba(7, 153, 121, 0.09), transparent 22rem),
+        linear-gradient(180deg, #f8fcff 0%, #ffffff 100%);
+    }
+
+    .hero {
+      min-height: 510px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: center;
+      gap: 56px;
+      padding: 78px 0 64px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      color: var(--primary-dark);
+      background: #e8f6ff;
+      border: 1px solid #bee5f8;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    h1 {
+      margin: 18px 0;
+      color: #123148;
+      font-size: clamp(2.5rem, 6vw, 4.6rem);
+      line-height: 1.13;
+      letter-spacing: -0.045em;
+    }
+
+    h1 strong {
+      color: var(--primary);
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border-radius: 9px;
+      border: 1px solid transparent;
+      font-size: 0.93rem;
+      font-weight: 750;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+      color: #ffffff;
+      background: var(--primary);
+      box-shadow: 0 8px 18px rgba(8, 127, 197, 0.20);
+    }
+
+    .button-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .button-outline {
+      color: var(--primary-dark);
+      background: #ffffff;
+      border-color: #b9dbe9;
+    }
+
+    .button-outline:hover {
+      background: #f1faff;
+      border-color: var(--primary);
+    }
+
+    .workflow-preview {
+      padding: 26px;
+      background: #ffffff;
+      border: 1px solid #cce4f0;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .workflow-preview h3 {
+      margin: 0 0 14px;
+      color: var(--primary-dark);
+      font-size: 1.05rem;
+    }
+
+    .mini-step {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 11px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .mini-step:last-child {
+      border-bottom: none;
+    }
+
+    .mini-number {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      color: var(--primary);
+      background: #e8f6ff;
+      border: 1px solid #addbf1;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .mini-step span {
+      color: #405c6d;
+      font-size: 0.92rem;
+    }
+
+    /* =========================
+       通用区块
+    ========================= */
+    section {
+      padding: 76px 0;
+    }
+
+    .section-soft {
+      background: var(--bg-soft);
+      border-top: 1px solid #edf3f6;
+      border-bottom: 1px solid #edf3f6;
+    }
+
+    .section-head {
+      max-width: 790px;
+      margin-bottom: 34px;
+    }
+
+    .section-label {
+      margin: 0 0 8px;
+      color: var(--secondary);
+      font-size: 0.82rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: #17364b;
+      font-size: clamp(1.85rem, 3vw, 2.7rem);
+      line-height: 1.25;
+    }
+
+    .section-head > p:last-child {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    /* =========================
+       CFD步骤
+    ========================= */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .step-card {
+      min-height: 250px;
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .step-card:hover {
+      transform: translateY(-5px);
+      border-color: #8ecce9;
+      box-shadow: var(--shadow);
+    }
+
+    .step-no {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+    }
+
+    .step-card h3 {
+      margin: 0 0 8px;
+      color: #1b3d53;
+      font-size: 1.17rem;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 17px;
+      padding: 3px 10px;
+      color: #06775e;
+      background: var(--secondary-light);
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 750;
+    }
+
+    /* =========================
+       方程卡片
+    ========================= */
+    .formula-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .formula-card {
+      padding: 25px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .formula-card h3 {
+      margin: 0 0 12px;
+      color: var(--primary-dark);
+      font-size: 1.1rem;
+    }
+
+    .formula {
+      overflow-x: auto;
+      margin: 15px 0;
+      padding: 15px;
+      color: #08755d;
+      background: #f0fbf7;
+      border: 1px solid #caede2;
+      border-radius: 10px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      white-space: nowrap;
+    }
+
+    .formula-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    /* =========================
+       质量检查
+    ========================= */
+    .check-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .check-item {
+      display: flex;
+      gap: 14px;
+      padding: 20px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .check-icon {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      color: #06775e;
+      background: var(--secondary-light);
+      border-radius: 9px;
+      font-weight: 900;
+    }
+
+    .check-item h3 {
+      margin: 0 0 4px;
+      color: #1d3d50;
+      font-size: 1rem;
+    }
+
+    .check-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* =========================
+       案例区域
+    ========================= */
+    .case-box {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 32px;
+      padding: 34px;
+      background:
+        radial-gradient(circle at right top, rgba(8, 127, 197, 0.10), transparent 19rem),
+        #f9fdff;
+      border: 1px solid #bcddeb;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .case-box h2 {
+      margin-top: 0;
+    }
+
+    .case-box p {
+      color: var(--muted);
+    }
+
+    .video-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      background: #fb7299;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 750;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .video-button:hover {
+      transform: translateY(-2px);
+      background: #e85e88;
+    }
+
+    .case-list {
+      display: grid;
+      gap: 12px;
+      align-content: center;
+    }
+
+    .case-list div {
+      padding: 13px 15px;
+      color: #466372;
+      background: #ffffff;
+      border-left: 4px solid var(--primary);
+      border-radius: 0 9px 9px 0;
+      box-shadow: 0 3px 10px rgba(26, 78, 107, 0.05);
+      font-size: 0.93rem;
+    }
+
+    .case-list strong {
+      color: var(--primary-dark);
+    }
+
+    /* =========================
+       资料区
+    ========================= */
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .resource-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 270px;
+      padding: 24px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+
+    .resource-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+      color: var(--primary);
+      background: var(--primary-light);
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 850;
+    }
+
+    .resource-card h3 {
+      margin: 0 0 8px;
+      color: #1b3d53;
+      font-size: 1.13rem;
+    }
+
+    .resource-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .resource-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      padding: 11px 14px;
+      color: #ffffff;
+      background: var(--primary);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 750;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .resource-button:hover {
+      transform: translateY(-2px);
+      background: var(--primary-dark);
+    }
+
+    .resource-button.pdf-button {
+      background: var(--danger);
+    }
+
+    .resource-button.pdf-button:hover {
+      background: var(--danger-dark);
+    }
+
+    /* =========================
+       作业任务
+    ========================= */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .task-card {
+      padding: 24px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .task-card.highlight {
+      background: #f1fcf8;
+      border-left: 5px solid var(--secondary);
+    }
+
+    .task-card h3 {
+      margin: 0 0 8px;
+      color: #1b3d53;
+      font-size: 1.15rem;
+    }
+
+    .task-card ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .task-card li {
+      margin: 7px 0;
+    }
+
+    .task-card strong {
+      color: #1d4a60;
+    }
+
+    /* =========================
+       工况表格
+    ========================= */
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 26px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 17px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th {
+      color: var(--primary-dark);
+      background: #eff9fd;
+      font-weight: 800;
+    }
+
+    td {
+      color: #536d7c;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* =========================
+       统计区
+    ========================= */
+    .stats-panel {
+      margin-top: 28px;
+      padding: 25px;
+      background: #f8fcff;
+      border: 1px solid #c8e3ef;
+      border-radius: var(--radius);
+    }
+
+    .stats-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stats-panel h3 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 1.15rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .stat-card {
+      padding: 18px 12px;
+      background: #ffffff;
+      border: 1px solid #dceaf1;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-number {
+      display: block;
+      color: var(--primary);
+      font-size: 2rem;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .stats-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .small-button {
+      padding: 8px 11px;
+      color: var(--primary-dark);
+      background: #ffffff;
+      border: 1px solid #b8dce9;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .small-button:hover {
+      color: #ffffff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .stats-note {
+      margin: 15px 0 0;
+      color: #758b98;
+      font-size: 0.81rem;
+    }
+
+    /* =========================
+       页脚
+    ========================= */
+    footer {
+      padding: 30px 0;
+      color: var(--muted);
+      background: #f7fafc;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    /* =========================
+       响应式布局
+    ========================= */
+    @media (max-width: 900px) {
+      .hero,
+      .case-box {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .resources-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        min-height: auto;
+        padding: 58px 0;
+      }
+
+      section {
+        padding: 55px 0;
+      }
+
+      .steps,
+      .formula-grid,
+      .check-list,
+      .task-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .case-box {
+        padding: 23px;
+      }
+
+      .stats-panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 导航栏 -->
+  <nav>
+    <div class="container nav-inner">
+      <a class="brand" href="index.html">
+        <strong>瀚海锐翼</strong> CFD 基准
+      </a>
+
+      <div class="nav-links">
+        <a href="index.html">项目首页</a>
+        <a href="#process">计算流程</a>
+        <a href="#equations">控制方程</a>
+        <a href="#quality">质量检查</a>
+        <a href="#case">翼型案例</a>
+        <a href="#resources">补充资料</a>
+        <a href="#assignment">课程任务</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- 首屏 -->
+    <div class="hero-bg">
+      <header class="container hero">
+        <div>
+          <span class="eyebrow">Computational Fluid Dynamics</span>
+
+          <h1>
+            从物理问题到<br />
+            <strong>可信的流场结果</strong>
+          </h1>
+
+          <p>
+            CFD（计算流体力学）通过数值方法求解流体控制方程，
+            用于预测流场中的速度、压力、湍流特性，以及升力、阻力、压降等工程参数。
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#process">查看 CFD 流程</a>
+            <a class="button button-outline" href="#assignment">查看课程任务</a>
+          </div>
+        </div>
+
+        <aside class="workflow-preview">
+          <h3>CFD 工作流总览</h3>
+
+          <div class="mini-step">
+            <b class="mini-number">1</b>
+            <span>定义计算目标、工况与输出变量</span>
+          </div>
+
+          <div class="mini-step">
+            <b class="mini-number">2</b>
+            <span>建立几何模型和流体计算域</span>
+          </div>
+
+          <div class="mini-step">
+            <b class="mini-number">3</b>
+            <span>进行网格划分和边界层加密</span>
+          </div>
+
+          <div class="mini-step">
+            <b class="mini-number">4</b>
+            <span>设置物性、模型和边界条件</span>
+          </div>
+
+          <div class="mini-step">
+            <b class="mini-number">5</b>
+            <span>离散控制方程并迭代求解</span>
+          </div>
+
+          <div class="mini-step">
+            <b class="mini-number">6</b>
+            <span>后处理、网格验证和实验对比</span>
+          </div>
+        </aside>
+      </header>
+    </div>
+
+    <!-- CFD 计算流程 -->
+    <section id="process">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Workflow</p>
+          <h2>CFD 计算的六个关键步骤</h2>
+          <p>
+            一个可靠的 CFD 项目不只是“运行软件”，还需要合理的物理假设、网格、
+            边界条件及计算结果验证。
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step-card">
+            <span class="step-no">STEP 01</span>
+            <h3>明确计算目标</h3>
+            <p>
+              确定研究对象和输出量，例如压力分布、速度场、升力系数 CL、
+              阻力系数 CD、压降、传热或流动分离位置。
+            </p>
+            <span class="tag">目标与工况</span>
+          </article>
+
+          <article class="step-card">
+            <span class="step-no">STEP 02</span>
+            <h3>建立物理模型</h3>
+            <p>
+              判断流动是二维还是三维、稳态还是瞬态、层流还是湍流、
+              可压缩还是不可压缩，并选择适当的湍流模型。
+            </p>
+            <span class="tag">控制方程与假设</span>
+          </article>
+
+          <article class="step-card">
+            <span class="step-no">STEP 03</span>
+            <h3>建立几何与计算域</h3>
+            <p>
+              清理不影响流动的微小结构，保留关键几何特征；
+              在模型外建立足够大的流体域，减小远场边界干扰。
+            </p>
+            <span class="tag">CAD 与计算域</span>
+          </article>
+
+          <article class="step-card">
+            <span class="step-no">STEP 04</span>
+            <h3>划分网格</h3>
+            <p>
+              将连续流场离散为有限数量的网格单元。
+              在壁面、前缘、后缘、分离区和尾流区域进行局部加密。
+            </p>
+            <span class="tag">空间离散</span>
+          </article>
+
+          <article class="step-card">
+            <span class="step-no">STEP 05</span>
+            <h3>设置边界并求解</h3>
+            <p>
+              设置入口速度、出口压力、壁面无滑移条件和湍流参数，
+              选择求解器、离散格式及压力—速度耦合算法。
+            </p>
+            <span class="tag">数值求解</span>
+          </article>
+
+          <article class="step-card">
+            <span class="step-no">STEP 06</span>
+            <h3>后处理与验证</h3>
+            <p>
+              输出云图、流线、压力系数和气动力结果；通过残差、
+              网格无关性和实验数据对比判断计算结果是否可信。
+            </p>
+            <span class="tag">验证与确认</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心方程 -->
+    <section id="equations" class="section-soft">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Governing Equations</p>
+          <h2>CFD 求解的核心方程</h2>
+          <p>
+            CFD 基于质量守恒、动量守恒和能量守恒，将连续控制方程离散为代数方程，
+            再由计算机进行迭代求解。
+          </p>
+        </div>
+
+        <div class="formula-grid">
+          <article class="formula-card">
+            <h3>质量守恒方程</h3>
+            <div class="formula">∂ρ/∂t + ∇ · (ρu) = 0</div>
+            <p>
+              质量守恒表示流体质量不会凭空产生或消失。对于低速不可压缩流，
+              可以近似为 ∇ · u = 0。
+            </p>
+          </article>
+
+          <article class="formula-card">
+            <h3>动量守恒方程</h3>
+            <div class="formula">ρ(∂u/∂t + u · ∇u) = −∇p + μ∇²u + ρg</div>
+            <p>
+              Navier–Stokes 方程描述压力、黏性力、惯性力和重力共同作用下的流动状态。
+            </p>
+          </article>
+
+          <article class="formula-card">
+            <h3>雷诺数</h3>
+            <div class="formula">Re = ρUL / μ</div>
+            <p>
+              雷诺数表示惯性力与黏性力的相对大小。翼型计算中，
+              雷诺数直接影响边界层、转捩和分离现象。
+            </p>
+          </article>
+
+          <article class="formula-card">
+            <h3>升力与阻力系数</h3>
+            <div class="formula">CL = L / (½ρU²A) &nbsp; | &nbsp; CD = D / (½ρU²A)</div>
+            <p>
+              CL 和 CD 是衡量翼型气动性能的重要无量纲参数，
+              可用于不同工况和不同翼型之间的对比。
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 质量检查 -->
+    <section id="quality">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Quality Control</p>
+          <h2>如何判断 CFD 结果可靠？</h2>
+          <p>
+            软件计算结束或残差下降，并不意味着结果一定正确。
+            还需要从以下方面检查数值计算的可信度。
+          </p>
+        </div>
+
+        <div class="check-list">
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>残差与目标量收敛</h3>
+              <p>除了残差，还应观察 CL、CD、压力、压降或质量流量是否趋于稳定。</p>
+            </div>
+          </article>
+
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>质量守恒检查</h3>
+              <p>检查入口和出口质量流量是否基本平衡，避免出现明显的守恒误差。</p>
+            </div>
+          </article>
+
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>网格无关性分析</h3>
+              <p>比较粗、中、细网格下的结果，确认继续加密后 CL、CD 等关键结果变化较小。</p>
+            </div>
+          </article>
+
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>近壁网格与 y⁺</h3>
+              <p>第一层网格高度应与壁面处理方法和湍流模型要求相匹配。</p>
+            </div>
+          </article>
+
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>计算域大小检查</h3>
+              <p>入口、出口和远场边界要远离翼型，避免边界条件影响翼型周围流场。</p>
+            </div>
+          </article>
+
+          <article class="check-item">
+            <div class="check-icon">✓</div>
+            <div>
+              <h3>实验与参考数据验证</h3>
+              <p>将 Cp、CL、CD 与公开实验数据、风洞结果或可信参考结果进行比较。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- NACA4412案例 -->
+    <section id="case" class="section-soft">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Case Study</p>
+          <h2>NACA 4412 孤立翼型 CFD 计算案例</h2>
+          <p>
+            本课程案例以 NACA 4412 二维孤立翼型为对象，进行低速外流场数值模拟，
+            分析不同攻角下翼型的流场、压力分布、升力和阻力。
+          </p>
+        </div>
+
+        <div class="case-box">
+          <div>
+            <p class="section-label">NACA 4412 Airfoil</p>
+            <h2>NACA 4412 翼型外流场分析</h2>
+
+            <p>
+              NACA 4412 是经典四位数翼型：最大弯度为翼弦长度的 4%，
+              最大弯度位置位于 40% 弦长处，最大厚度为翼弦长度的 12%。
+            </p>
+
+            <p>
+              学生应以视频为参考，完成几何建立、外流场构造、网格划分、
+              边界条件设置、求解计算和后处理，并与实验或公开数据进行比较。
+            </p>
+
+            <a
+              id="videoLink"
+              class="video-button"
+              href="https://www.bilibili.com/video/BV1kF41187iH?spm_id_from=333.788.videopod.sections&vd_source=b7f17cf03096e65fb3b66954bad3aeb1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ▶ 打开 Bilibili 视频案例
+            </a>
+          </div>
+
+          <div class="case-list">
+            <div>
+              <strong>计算对象：</strong>
+              NACA 4412 二维孤立翼型，以翼弦长度 c 作为特征长度。
+            </div>
+
+            <div>
+              <strong>推荐计算域：</strong>
+              入口距离前缘约 5c，出口距离后缘约 10c～20c，上下边界距离翼型不小于 5c。
+            </div>
+
+            <div>
+              <strong>推荐边界条件：</strong>
+              入口采用速度入口，出口采用压力出口，翼型表面设置为无滑移壁面。
+            </div>
+
+            <div>
+              <strong>推荐模型：</strong>
+              低速不可压缩流、二维稳态 RANS；湍流模型可优先选择 SST k-ω。
+            </div>
+
+            <div>
+              <strong>网格重点：</strong>
+              前缘、后缘、翼面边界层和下游尾流区域局部加密，并检查 y⁺ 分布。
+            </div>
+
+            <div>
+              <strong>主要输出：</strong>
+              Cp 分布、速度云图、压力云图、流线、CL、CD、CL/CD 和分离位置。
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>计算项目</th>
+                <th>建议设置</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>计算类型</td>
+                <td>二维、稳态、外流场</td>
+                <td>适合基础翼型平均气动力性能分析。</td>
+              </tr>
+              <tr>
+                <td>流体模型</td>
+                <td>低速不可压缩空气</td>
+                <td>普通翼型风速通常远低于声速，可近似不可压缩。</td>
+              </tr>
+              <tr>
+                <td>湍流模型</td>
+                <td>SST k-ω</td>
+                <td>通常适用于近壁流动、逆压梯度和分离预测。</td>
+              </tr>
+              <tr>
+                <td>建议攻角</td>
+                <td>0°、4°、8°</td>
+                <td>可自行扩展至 −4°～16°，分析失速前后的性能变化。</td>
+              </tr>
+              <tr>
+                <td>网格验证</td>
+                <td>粗、中、细三套网格</td>
+                <td>比较 CL、CD、Cp 等关键结果，证明网格无关性。</td>
+              </tr>
+              <tr>
+                <td>结果对比</td>
+                <td>CFD 与实验/参考数据</td>
+                <td>保证雷诺数、攻角、参考面积及参考速度定义一致。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 补充资料 -->
+    <section id="resources">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Learning Resources</p>
+          <h2>案例补充资料</h2>
+          <p>
+            完成课程任务前，请阅读视频资料、翼型数据库和 PDF 补充资料。
+            所有资源点击和 PDF 下载行为会记录在当前浏览器中。
+          </p>
+        </div>
+
+        <div class="resources-grid">
+          <article class="resource-card">
+            <div class="resource-icon">▶</div>
+            <h3>视频案例资料</h3>
+            <p>
+              观看 NACA 4412 翼型 CFD 案例视频，参考其中的建模、网格划分、
+              边界条件设置、求解流程和后处理方法。
+            </p>
+
+            <a
+              id="videoResourceLink"
+              class="resource-button"
+              href="https://www.bilibili.com/video/BV1kF41187iH?spm_id_from=333.788.videopod.sections&vd_source=b7f17cf03096e65fb3b66954bad3aeb1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ▶ 进入视频页面
+            </a>
+          </article>
+
+          <article class="resource-card">
+            <div class="resource-icon">⌁</div>
+            <h3>AirfoilTools 翼型数据库</h3>
+            <p>
+              使用 AirfoilTools 获取 NACA 4412 翼型坐标、翼型几何参数、
+              升阻力参考曲线及用于实验结果对比的公开翼型数据。
+            </p>
+
+            <a
+              id="airfoilLink"
+              class="resource-button"
+              href="http://airfoiltools.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ↗ 打开 AirfoilTools
+            </a>
+          </article>
+
+          <article class="resource-card">
+            <div class="resource-icon">PDF</div>
+            <h3>PDF 补充学习资料</h3>
+            <p>
+              下载教师上传的 PDF 文件，作为翼型计算设置、网格策略、
+              数值结果分析和 CFD 与实验结果对比报告的补充参考。
+            </p>
+
+            <a
+              id="pdfDownload"
+              class="resource-button pdf-button"
+              href="assets/NACA4412_CFD_补充资料.pdf"
+              download
+            >
+              ⇩ 下载 PDF 附件
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 发布任务 -->
+    <section id="assignment" class="section-soft">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-label">Course Assignment</p>
+          <h2>课程任务：复现视频并完成 CFD 与实验对比报告</h2>
+          <p>
+            学生需独立完成 NACA 4412 孤立翼型二维 CFD 计算，
+            复现视频中的基本工作流程，并完成数值结果与实验/公开参考结果的对比分析。
+          </p>
+        </div>
+
+        <div class="task-grid">
+          <article class="task-card highlight">
+            <h3>一、核心任务要求</h3>
+            <ul>
+              <li>观看 NACA 4412 翼型 CFD 案例视频并复现其基本工作流程。</li>
+              <li>使用 AirfoilTools 获取或核对 NACA 4412 翼型几何坐标与参考数据。</li>
+              <li>建立 NACA 4412 二维孤立翼型外流场计算模型。</li>
+              <li>完成流体域、翼型壁面、前缘、后缘和尾流区域的合理网格划分。</li>
+              <li>设置合适的边界条件、湍流模型、求解器和收敛判据。</li>
+              <li>至少完成 3 个不同攻角下的数值计算。</li>
+              <li>完成 CFD 计算结果与实验/公开数据的对比报告。</li>
+            </ul>
+          </article>
+
+          <article class="task-card">
+            <h3>二、建议计算工况</h3>
+            <ul>
+              <li><strong>翼型：</strong>NACA 4412 二维孤立翼型。</li>
+              <li><strong>计算方法：</strong>二维稳态 RANS 数值模拟。</li>
+              <li><strong>流体介质：</strong>低速不可压缩空气。</li>
+              <li><strong>湍流模型：</strong>SST k-ω；条件允许时可研究转捩模型影响。</li>
+              <li><strong>攻角设置：</strong>建议至少计算 0°、4°、8° 三个工况。</li>
+              <li><strong>扩展任务：</strong>可计算更大攻角，分析翼型接近失速及失速后的流动特征。</li>
+              <li><strong>网格要求：</strong>至少构建粗、中、细三套网格进行无关性分析。</li>
+            </ul>
+          </article>
+
+          <article class="task-card">
+            <h3>三、计算与实验结果对比</h3>
+            <ul>
+              <li>从 AirfoilTools 或其他公开可靠来源获取 NACA 4412 参考数据。</li>
+              <li>对比前确认雷诺数、攻角、来流速度、参考面积定义保持一致。</li>
+              <li>比较不同攻角下的升力系数 CL。</li>
+              <li>比较不同攻角下的阻力系数 CD。</li>
+              <li>绘制并比较翼型上下表面的压力系数 Cp 分布。</li>
+              <li>说明 CFD 与实验数据之间的误差，并分析可能原因。</li>
+              <li>误差分析可从网格、湍流模型、转捩、二维假设和实验条件等角度展开。</li>
+            </ul>
+          </article>
+
+          <article class="task-card">
+            <h3>四、提交报告内容</h3>
+            <ul>
+              <li>研究目标、NACA 4412 翼型参数和计算工况说明。</li>
+              <li>几何模型、计算域尺寸、边界条件和物理模型说明。</li>
+              <li>网格策略、网格数量、边界层设置、y⁺ 分布和网格无关性分析。</li>
+              <li>求解器设置、残差收敛曲线及 CL、CD 监测曲线。</li>
+              <li>速度云图、压力云图、流线图和尾流分析结果。</li>
+              <li>Cp、CL、CD、CL/CD 等数值计算结果。</li>
+              <li>CFD 结果与实验/公开参考数据的对比图表及误差分析。</li>
+              <li>最终结论、不足之处和后续改进建议。</li>
+            </ul>
+          </article>
+        </div>
+
+        <!-- 数据统计区 -->
+        <div class="stats-panel">
+          <div class="stats-panel-header">
+            <h3>资源访问统计</h3>
+
+            <div class="stats-actions">
+              <button class="small-button" id="exportStatsBtn">导出统计数据</button>
+              <button class="small-button" id="resetStatsBtn">重置本地统计</button>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-number" id="pageViews">0</span>
+              <span class="stat-label">页面浏览量</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number" id="videoClicks">0</span>
+              <span class="stat-label">视频页面点击次数</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number" id="airfoilClicks">0</span>
+              <span class="stat-label">AirfoilTools 点击次数</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number" id="pdfDownloads">0</span>
+              <span class="stat-label">PDF 附件下载次数</span>
+            </div>
+          </div>
+
+          <p class="stats-note">
+            提示：当前统计数据保存于本浏览器的 localStorage，仅适用于演示或本机管理。
+            如需统计全班学生的真实访问数据，应部署后端统计接口或接入 Firebase、Supabase、Umami、Google Analytics 等服务。
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      CFD 计算流程：物理建模 → 几何与网格 → 边界条件 → 数值求解 → 后处理 → 验证与确认
+    </div>
+  </footer>
+
+  <script>
+    /*
+      =============================================================
+      PDF 路径设置
+      -------------------------------------------------------------
+      请将上传的 PDF 放入项目目录：
+      assets/NACA4412_CFD_补充资料.pdf
+
+      如果文件名不同，只需修改下方 PDF_FILE 的路径。
+      =============================================================
+    */
+    const PDF_FILE = "assets/NACA4412_CFD_补充资料.pdf";
+
+    /*
+      =============================================================
+      本地统计功能
+      -------------------------------------------------------------
+      使用 localStorage 保存统计数据：
+      - 页面浏览量
+      - 视频链接点击次数
+      - AirfoilTools 点击次数
+      - PDF 下载次数
+
+      注意：localStorage 只能统计当前浏览器，不能统计不同学生设备的总数据。
+      =============================================================
+    */
+
+    const STATS_KEYS = {
+      pageViews: "naca4412_cfd_page_views",
+      videoClicks: "naca4412_cfd_video_clicks",
+      airfoilClicks: "naca4412_cfd_airfoil_clicks",
+      pdfDownloads: "naca4412_cfd_pdf_downloads"
+    };
+
+    function getCount(key) {
+      return Number(localStorage.getItem(key) || 0);
+    }
+
+    function setCount(key, value) {
+      localStorage.setItem(key, value);
+    }
+
+    function increaseCount(key) {
+      const newCount = getCount(key) + 1;
+      setCount(key, newCount);
+      return newCount;
+    }
+
+    function renderStatistics() {
+      document.getElementById("pageViews").textContent =
+        getCount(STATS_KEYS.pageViews);
+
+      document.getElementById("videoClicks").textContent =
+        getCount(STATS_KEYS.videoClicks);
+
+      document.getElementById("airfoilClicks").textContent =
+        getCount(STATS_KEYS.airfoilClicks);
+
+      document.getElementById("pdfDownloads").textContent =
+        getCount(STATS_KEYS.pdfDownloads);
+    }
+
+    function downloadStatistics() {
+      const now = new Date().toLocaleString("zh-CN");
+
+      const csvContent = [
+        ["统计项目", "次数"],
+        ["页面浏览量", getCount(STATS_KEYS.pageViews)],
+        ["Bilibili视频点击次数", getCount(STATS_KEYS.videoClicks)],
+        ["AirfoilTools点击次数", getCount(STATS_KEYS.airfoilClicks)],
+        ["PDF下载次数", getCount(STATS_KEYS.pdfDownloads)],
+        ["导出时间", now]
+      ]
+        .map(row => row.join(","))
+        .join("\n");
+
+      const blob = new Blob(
+        ["\uFEFF" + csvContent],
+        { type: "text/csv;charset=utf-8;" }
+      );
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "NACA4412_CFD_资源访问统计.csv";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    }
+
+    function resetStatistics() {
+      const confirmed = window.confirm(
+        "确定要重置当前浏览器中的全部访问统计数据吗？"
+      );
+
+      if (!confirmed) return;
+
+      Object.values(STATS_KEYS).forEach(key => localStorage.removeItem(key));
+      renderStatistics();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      /* 设置 PDF 下载地址 */
+      document.getElementById("pdfDownload").href = PDF_FILE;
+
+      /* 每次打开或刷新页面，浏览量加 1 */
+      increaseCount(STATS_KEYS.pageViews);
+
+      /* 页面中有两个视频入口，均统计为视频点击 */
+      document.getElementById("videoLink").addEventListener("click", function () {
+        increaseCount(STATS_KEYS.videoClicks);
+        renderStatistics();
+      });
+
+      document.getElementById("videoResourceLink").addEventListener("click", function () {
+        increaseCount(STATS_KEYS.videoClicks);
+        renderStatistics();
+      });
+
+      /* AirfoilTools 点击统计 */
+      document.getElementById("airfoilLink").addEventListener("click", function () {
+        increaseCount(STATS_KEYS.airfoilClicks);
+        renderStatistics();
+      });
+
+      /* PDF 下载统计 */
+      document.getElementById("pdfDownload").addEventListener("click", function () {
+        increaseCount(STATS_KEYS.pdfDownloads);
+        renderStatistics();
+      });
+
+      /* 导出与重置按钮 */
+      document.getElementById("exportStatsBtn").addEventListener("click", downloadStatistics);
+      document.getElementById("resetStatsBtn").addEventListener("click", resetStatistics);
+
+      /* 页面加载后显示统计数据 */
+      renderStatistics();
+    });
+  </script>
+</body>
+</html>
